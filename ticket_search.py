@@ -20,8 +20,8 @@ def read_data(csv_file, db):
         ticket_data = list()
         for row in reader:
             row['Цена'] = int(row['Цена'])
-            d, m = row['Дата'].split('.')
-            row['Дата'] = '{}-{}-{}'.format(datetime.now().year, m, d)
+            date_str = row['Дата'] + '.{}'.format(datetime.now().year)
+            row['Дата'] = datetime.strptime(date_str, '%d.%m.%Y').date()
             ticket_data.append(row)
         # создаем коллекцию билетов
         tickets_list = db.tickets_list
@@ -50,6 +50,8 @@ def find_by_name(name, db):
 
 
 def find_by_date(init_date, final_date, db):
+    init_date = datetime.strptime(init_date, '%Y-%m-%d').date()
+    final_date = datetime.strptime(final_date, '%Y-%m-%d').date()
     sorted_tickets = list(db.tickets_list.find({'Дата': {'$gte': init_date, '$lte': final_date}})
                           .sort('Дата', pymongo.ASCENDING))
     for ticket in sorted_tickets:
